@@ -3,8 +3,10 @@ import openpyxl
 from pathlib import Path
 
 #Define input and outpu paths --> Remember to name the correct CSV file and the name of the Excel outpuy
-input_path = Path('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/[usa]_[all_factors]_[daily]_[vw_cap].csv')
+input_path = Path('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/USA all themes daily data.csv')
 output_path = Path('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Manipulated data/Data.xlsx')
+Kenneth_french = Path('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Manipulated data/Kenneth_French_data.xlsx')
+output_path2 = Path('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Manipulated data/Merged data.xlsx')
 
 # Read in the CSV file
 df = pd.read_csv(input_path)
@@ -30,3 +32,16 @@ df.to_excel(output_path, index=False)
 
 # Print a message to confirm that the file was saved
 print("File saved as Excel'")
+
+#Begin the data mergin process
+# read the first Excel file into a dataframe
+df1 = pd.read_excel(output_path)
+
+# read the second Excel file into a dataframe
+df2 = pd.read_excel(Kenneth_french)
+
+# merge the two dataframes based on the date column
+merged_df = pd.merge(df1, df2, on='date', how='inner')
+
+# save the merged dataframe to a new Excel file
+merged_df.to_excel(output_path2, index=False)

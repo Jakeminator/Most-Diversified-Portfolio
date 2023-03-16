@@ -12,31 +12,30 @@ from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 # Load time series data into a DataFrame
-data = pd.read_excel('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Manipulated data/Data.xlsx', index_col='date', parse_dates=True)
+data = pd.read_excel('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Test of Timeseries.xlsx', index_col='Time', parse_dates=True)
 data = data.dropna()
 print(data)
 
 ############### Dickey Fuller test ###############
 
 # Create an empty dataframe to store the test results
-results_dickeyfuller = pd.DataFrame(columns=['Stock', 'ADF Statistic', 'p-value', 'Stationary', 'AIC'])
+results_dickeyfuller = pd.DataFrame(columns=['Portfolio', 'ADF Statistic', 'Stationary', 'AIC'])
 
 # Loop through each stock's returns and run the Augmented Dickey-Fuller test
 for col in data.columns:
     result = adfuller(data[col])
-    p_val = round(result[1], 5)
-    stationary = 'Yes' if p_val < 0.05 else 'No'
+    stationary = 'Yes' if result[0] < result[4]['5%'] else 'No'
     model = ARIMA(data[col], order=(1,1,0)).fit()
     aic = model.aic
-    stock_results = pd.DataFrame({'Stock': [col],
+    stock_results = pd.DataFrame({'Portfolio': [col],
                                    'ADF Statistic': [result[0]],
-                                   'p-value': [p_val],
                                    'Stationary': [stationary],
                                    'AIC': aic})
     results_dickeyfuller = pd.concat([results_dickeyfuller, stock_results], ignore_index=True)
 
 # Print the results dataframe
 print(results_dickeyfuller)
+print('Critical Values:')
 
 results_dickeyfuller.to_excel('/Users/jacobhenrichsen/iCloud Drive (arkiv) - 1/Documents/CBS/Master/3. Semester/Thesis/Code/Data/Manipulated data/Dickey_fuller_test.xlsx', index=False)
 
@@ -80,30 +79,6 @@ plt.bar(kpss_table['Variable'], kpss_table['Test Statistic'])
 plt.xticks(rotation=90)
 plt.ylabel('Test Statistic')
 plt.title('KPSS Test Results')
-
-############### Augmentet Dickey-Fuller test ###############
-
-ADF_table = pd.DataFrame(columns=['Variable', 'ADF Statistic', 'p-value', '5% CV', '1% CV'])
-
-# Loop over each variable in the data and perform the ADF test
-for col in data.columns:
-    result = adfuller(data[col])
-    nobs = result[3]
-    k_vars = len(result[0]) - 1
-    cv_1 = adfuller(data[col], regression='ct', maxlag=k_vars, autolag=None)[4]['1%']
-    cv_5 = adfuller(data[col], regression='ct', maxlag=k_vars, autolag=None)[4]['5%']
-    temp_df = pd.DataFrame({
-        'Variable': [col],
-        'ADF Test Statistic': [result[0]],
-        'p-value': [result[1]],
-        '5% CV': [cv_5],
-        '1% CV': [cv_1]
-    })
-    ADF_table = pd.concat([ADF_table, temp_df], ignore_index=True)
-
- 
-# Print the results DataFrame
-print(ADF_table)
 
 ############ Augmented Engle-Granger cointegration test ############
 
